@@ -4,53 +4,71 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    // タッチ開始位置、離した位置、方向を定義
     private Vector2 startPos, endPos, direction;
+    // Rigidbodyを変数に入れる
     Rigidbody rb;
+    // プレイヤーの位置
     Vector3 playerPos;
+    // プレイヤーのスピード
     public float speed = 1f;
     // 地面に接触しているか否か
     bool ground;
-    // ジャンプの強さ
-    //public float thrust = 500.0f;
+    // Animatorを変数に入れる
     private Animator animator;
 
     // Start is called before the first frame update
     void Start()
     {
+        // Rigidbodyを取得
         rb = GetComponent<Rigidbody>();
         // Playerの現在より少し前の位置を保存
         playerPos = transform.position;
-
+        // プレイヤーのAnimatorにアクセスする
         animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        // 地面に接触していると作動する
         if (ground)
         {
+            // タッチした場合
             if (Input.touchCount > 0)
             {
+                // タッチ開始
                 Touch touch = Input.GetTouch(0);
+
+                // タッチの段階により動作を変更
                 switch (touch.phase)
                 {
+                    // タッチ開始時
                     case TouchPhase.Began:
+                        // タッチ開始位置を取得
                         startPos = touch.position;
+
                         break;
+                        // 指を動かしている時
+
                     case TouchPhase.Moved:
+                        // タッチ開示時の位置と現在の指の位置の差分から方向を取得
                         direction = startPos - touch.position;
-
+                        // プレイヤー移動
                         PlayerMove();
 
                         break;
 
+                        // 指を押したままの時
                     case TouchPhase.Stationary:
+                        // タッチ開示時の位置と現在の指の位置の差分から方向を取得
                         direction = startPos - touch.position;
-
+                        // プレイヤー移動
                         PlayerMove();
 
                         break;
 
+                        // 指を離した時
                     case TouchPhase.Ended:
                         // ベクトルの長さがない=移動していない時は走るアニメーションはオフ
                         animator.SetBool("Walking", false);
@@ -66,23 +84,19 @@ public class PlayerController : MonoBehaviour
     void OnCollisionStay(Collision col)
     {
         ground = true;
-        // ジャンプのアニメーションをオフにする
-        //animator.SetBool("Jumping", false);
     }
 
     // Groundから離れると作動
     void OnCollisionExit(Collision col)
     {
         ground = false;
-        // ジャンプのアニメーションをオンにする
-        //animator.SetBool("Jumping", true);
     }
 
     // プレイヤーの移動
     void PlayerMove()
     {
         speed = 3f;
-        // 斜め移動用の角度を代入
+        // ８方向の角度を代入
         float radian = Mathf.Atan2(-direction.y, -direction.x) * Mathf.Rad2Deg;
         if (radian < 0)
         {
@@ -152,15 +166,17 @@ public class PlayerController : MonoBehaviour
 
         // Playerの位置を更新する
         playerPos = transform.position;
+    }
 
-        // スペースキーでジャンプ
-        //if (Input.GetButton("Jump"))
-        //{
-        //    // thrustの分だけ上方に力がかかる
-        //    rb.AddForce(transform.up * thrust);
-        //    // 速度が出ていたら前方と上方に力がかかる
-        //    if (rb.velocity.magnitude > 0)
-        //        rb.AddForce(transform.forward * thrust + transform.up * thrust);
-        //}
+    // 風船に当ると上に飛んで行く
+    void OnTriggerStay(Collider other)
+    {
+        if (other.tag == "Balloon")
+        {
+            // プレイヤーが上に移動
+            playerPos.y = playerPos.y + 0.01f;
+            // プレイヤーが左右に揺れる
+            rb.MovePosition(new Vector3(playerPos.x + Mathf.PingPong(Time.time, 1), playerPos.y, playerPos.z));
+        }
     }
 }

@@ -5,10 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class GameSystem : MonoBehaviour
 {
-    // スタートボタンを押したら実行する
+    // スタートボタンを押したらゲーム画面に移動
     public void GameStart()
     {
         SceneManager.LoadScene("Main");
-
     }
 }
